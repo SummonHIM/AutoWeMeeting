@@ -10,7 +10,6 @@
         }
         Return WeMeetFolder
     }
-
 }
 
 CheckWeMeetLocation() {
@@ -57,50 +56,45 @@ If (CheckWeMeetLocation()) {
     Exit
 }
 
+; 手动调整执行 Delay。如果你的电脑越卡建议设越长的时间。单位毫秒。
+SleepTime := 1000
+
 While True {
     For Index, CheckTime in LoadCSVSchedule("sDateTime") {
         If (Number(FormatTime(CheckTime, "yyyyMMddhhmmss")) = Number(FormatTime(,"yyyyMMddhhmmss"))) {
-            TrayTip "正在启动会议 ID " LoadCSVSchedule("MeetID")[Index] "，尽量不要移动鼠标或键盘…", "到钟！", 1
+            TrayTip "正在启动会议 ID " LoadCSVSchedule("MeetID")[Index] "，请不要移动鼠标或键盘…", FormatTime(CheckTime " R") " 到钟！", 1
             If (ProcessExist("wemeetapp.exe")) {
                 ProcessClose "wemeetapp.exe"
-                Sleep 300
-                Run "C:\Program Files (x86)\Tencent\WeMeet\wemeetapp.exe"
-                Sleep 3000
-                WinMoveTop "ahk_exe wemeetapp.exe"
-                ImageSearch &xLeaveMeet, &yLeaveMeet, 0, 0, 1000, 1000, "awm-blucancel.png"
-                Click xLeaveMeet, yLeaveMeet
-                Sleep 3000
-            } Else {
-                Run "C:\Program Files (x86)\Tencent\WeMeet\wemeetapp.exe"
-                While ! WinExist("ahk_exe wemeetapp.exe") {
-                    Sleep 3000
-                }
+                Sleep SleepTime
+            }
+            WinMinimizeAll
+            Run GetWeMeetLocation() "\wemeetapp.exe"
+            While ! WinExist("ahk_exe wemeetapp.exe") {
+                Sleep SleepTime * 10
             }
             WinMoveTop "ahk_exe wemeetapp.exe"
-            Sleep 500
-            ImageSearch &xJoinMeet, &yJoinMeet, 0, 0, 1000, 1000, "awm-joinmeet.png"
+            Sleep SleepTime
+            ImageSearch &xJoinMeet, &yJoinMeet, 0, 0, 1000, 1000, "AWM-JoinMeet.png"
             Click xJoinMeet, yJoinMeet
-            Sleep 500
-            WinMoveTop "加入会议"
+            Sleep SleepTime
             Loop 6
             {
-                Send "{BS}"
+                Send "{Backspace}"
                 Sleep 10
             }
-            Send "{BS}"
-            Sleep 500
+            Sleep SleepTime
             SendText LoadCSVSchedule("MeetID")[Index]
-            Sleep 500
+            Sleep SleepTime
             Send "{Enter}"
             If (LoadCSVSchedule("PassWD")[Index]) {
-                Sleep 500
-                WinMoveTop "wemeetapp"
+                Sleep SleepTime
                 SendText LoadCSVSchedule("PassWD")[Index]
-                Sleep 500
+                Sleep SleepTime
                 Send "{Enter}"
             }
-            TrayTip "等待 10 秒后程序将隐藏后台。", "启动向导执行完毕", 1
-            Sleep 5000
+            WinMinimizeAllUndo
+            TrayTip "等待 " (SleepTime * 10) / 1000 " 秒后程序将隐藏后台。", "启动向导执行完毕", 1
+            Sleep SleepTime * 10
         }
     }
 }

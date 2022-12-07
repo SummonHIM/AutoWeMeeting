@@ -1,0 +1,67 @@
+name: Build binary file
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Dwnload AutoHotKey v2.0-rc archive
+      shell: pwsh
+      run: |
+        # Special thank: nekocodeX/GitHub-Action-Ahk2Exe
+        $GetLatestAhk2ExeUrl = $(Invoke-WebRequest "https://api.github.com/repos/AutoHotkey/Ahk2Exe/releases/latest" | ConvertFrom-Json).assets[0].browser_download_url
+        Invoke-WebRequest "https://www.autohotkey.com/download/ahk-v2.zip" -OutFile "$env:TEMP\autohotkey.zip"
+        Invoke-WebRequest "$GetLatestAhk2ExeUrl" -OutFile "$env:TEMP\ahk2exe.zip"
+
+    - name: Install AutoHotKey v2.0-rc
+      shell: pwsh
+      run: |
+        # Special thank: nekocodeX/GitHub-Action-Ahk2Exe
+        Expand-Archive -Path "$env:TEMP\autohotkey.zip" -DestinationPath "$env:LOCALAPPDATA\Programs\AutoHotkey" -Force
+        Expand-Archive -Path "$env:TEMP\ahk2exe.zip" -DestinationPath "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler" -Force
+        Remove-Item -Path "$env:TEMP\autohotkey.zip" -Force
+        Remove-Item -Path "$env:TEMP\ahk2exe.zip" -Force
+        Write-Output ("$env:LOCALAPPDATA\Programs\AutoHotkey;" + "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler") | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Build x64 binary file
+      shell: pwsh
+      run: |
+        New-Item -Name "Build" -ItemType "Directory"
+        ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting64.exe /base AutoHotkey64.exe
+
+    - name: Build x32 binary file
+      shell: pwsh
+      run: |
+        New-Item -Name "Build" -ItemType "Directory"
+        ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting32.exe /base AutoHotkey32.exe
+
+    - name: Collect remaining files
+      shell: pwsh
+      run: |
+        Copy-Item "Schedule.csv" -Destination "Build\Schedule.csv"
+        Copy-Item "AWM-JoinMeet.png" -Destination "Build\AWM-JoinMeet.png"
+        Copy-Item "LICENSE" -Destination "Build\LICENSE"
+        Copy-Item "README.md" -Destination "Build\README.md"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Build
+        path: Build\*
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: AutoWeMeeting Build ID${{ github.run_number }}
+        tag_name: Build-${{ github.run_number }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+        prerelease: true
+        files: |
+          Build\*
