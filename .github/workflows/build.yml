@@ -33,13 +33,13 @@ jobs:
     - name: Build x64 binary file
       shell: pwsh
       run: |
-        New-Item -Name "Build" -ItemType "Directory"
+        if (! $(Test-Path Build)) { New-Item -Name "Build" -ItemType "Directory" }
         ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting64.exe /base AutoHotkey64.exe
 
     - name: Build x32 binary file
       shell: pwsh
       run: |
-        New-Item -Name "Build" -ItemType "Directory"
+        if (! $(Test-Path Build)) { New-Item -Name "Build" -ItemType "Directory" }
         ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting32.exe /base AutoHotkey32.exe
 
     - name: Collect remaining files
