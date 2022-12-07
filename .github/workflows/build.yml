@@ -16,6 +16,7 @@ jobs:
       shell: pwsh
       run: |
         # Special thank: nekocodeX/GitHub-Action-Ahk2Exe
+        Write-Output "TEMP=$env:TEMP; LOCALAPPDATA=$env:LOCALAPPDATA"
         $GetLatestAhk2ExeUrl = $(Invoke-WebRequest "https://api.github.com/repos/AutoHotkey/Ahk2Exe/releases/latest" | ConvertFrom-Json).assets[0].browser_download_url
         Invoke-WebRequest "https://www.autohotkey.com/download/ahk-v2.zip" -OutFile "$env:TEMP\autohotkey.zip"
         Invoke-WebRequest "$GetLatestAhk2ExeUrl" -OutFile "$env:TEMP\ahk2exe.zip"
@@ -33,35 +34,36 @@ jobs:
     - name: Build x64 binary file
       shell: pwsh
       run: |
-        if (! $(Test-Path Build)) { New-Item -Name "Build" -ItemType "Directory" }
-        ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting64.exe /base AutoHotkey64.exe
+        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting64.exe /base AutoHotkey64.exe
 
     - name: Build x32 binary file
       shell: pwsh
       run: |
-        if (! $(Test-Path Build)) { New-Item -Name "Build" -ItemType "Directory" }
-        ahk2exe.exe /in AutoWeMeeting.ahk /out Build\AutoWeMeeting32.exe /base AutoHotkey32.exe
+        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting32.exe /base AutoHotkey32.exe
 
-    - name: Collect remaining files
+    - name: Zip file
       shell: pwsh
       run: |
-        Copy-Item "Schedule.csv" -Destination "Build\Schedule.csv"
-        Copy-Item "AWM-JoinMeet.png" -Destination "Build\AWM-JoinMeet.png"
-        Copy-Item "LICENSE" -Destination "Build\LICENSE"
-        Copy-Item "README.md" -Destination "Build\README.md"
+        $CompressRelease = @{
+            LiteralPath= "AutoWeMeeting64.exe", "AutoWeMeeting32.exe", "AutoWeMeeting.ahk", "AWM-JoinMeet.png", "README.md", "LICENSE"
+            CompressionLevel = "Optimal"
+            DestinationPath = "AutoHotKey.zip"
+        }
+        Compress-Archive @CompressRelease
 
-    - name: Upload artifact
+    - name: Upload artifact to workflows
       uses: actions/upload-artifact@v3
       with:
         name: Build
-        path: Build\*
+        path: AutoHotKey.zip
 
-    - name: Release
+
+    - name: Create and upload artifact to Releases
       uses: softprops/action-gh-release@v1
       with:
         name: AutoWeMeeting Build ID${{ github.run_number }}
         tag_name: Build-${{ github.run_number }}
         token: ${{ secrets.GITHUB_TOKEN }}
         prerelease: true
-        files: |
-          Build\*
+        files: AutoHotKey.zip
+        
