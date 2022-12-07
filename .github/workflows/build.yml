@@ -47,7 +47,7 @@ jobs:
         $CompressRelease = @{
             LiteralPath= "AutoWeMeeting64.exe", "AutoWeMeeting32.exe", "AutoWeMeeting.ahk", "Schedule.csv", "AWM-JoinMeet.png", "README.md", "LICENSE"
             CompressionLevel = "Optimal"
-            DestinationPath = "AutoHotKey.zip"
+            DestinationPath = "AutoWeMeeting.zip"
         }
         Compress-Archive @CompressRelease
 
@@ -55,7 +55,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Build
-        path: AutoHotKey.zip
+        path: AutoWeMeeting.zip
 
 
     - name: Create and upload artifact to Releases
@@ -65,4 +65,4 @@ jobs:
         tag_name: Build-${{ github.run_number }}
         token: ${{ secrets.GITHUB_TOKEN }}
         prerelease: true
-        files: AutoHotKey.zip
+        files: AutoWeMeeting.zip
