@@ -34,12 +34,12 @@ jobs:
     - name: Build x64 binary file
       shell: pwsh
       run: |
-        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting64.exe /base AutoHotkey64.exe
+        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting64.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey64.exe
 
     - name: Build x32 binary file
       shell: pwsh
       run: |
-        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting32.exe /base AutoHotkey32.exe
+        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting32.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey32.exe
 
     - name: Zip file
       shell: pwsh
@@ -66,4 +66,3 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         prerelease: true
         files: AutoHotKey.zip
-        
