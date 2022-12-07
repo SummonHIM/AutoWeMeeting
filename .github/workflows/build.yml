@@ -45,7 +45,7 @@ jobs:
       shell: pwsh
       run: |
         $CompressRelease = @{
-            LiteralPath= "AutoWeMeeting64.exe", "AutoWeMeeting32.exe", "AutoWeMeeting.ahk", "AWM-JoinMeet.png", "README.md", "LICENSE"
+            LiteralPath= "AutoWeMeeting64.exe", "AutoWeMeeting32.exe", "AutoWeMeeting.ahk", "Schedule.csv", "AWM-JoinMeet.png", "README.md", "LICENSE"
             CompressionLevel = "Optimal"
             DestinationPath = "AutoHotKey.zip"
         }
