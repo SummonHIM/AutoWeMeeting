@@ -47,22 +47,30 @@ jobs:
         $CompressRelease = @{
             LiteralPath= "AutoWeMeeting64.exe", "AutoWeMeeting32.exe", "AutoWeMeeting.ahk", "Schedule.csv", "AWM-JoinMeet.png", "README.md", "LICENSE"
             CompressionLevel = "Optimal"
-            DestinationPath = "AutoWeMeeting.zip"
+            DestinationPath = "AutoWeMeeting-Build-$env:GITHUB_RUN_NUMBER.zip"
         }
         Compress-Archive @CompressRelease
+
+    - name: Generate release body
+      shell: pwsh
+      run: |
+        Write-Output "## 下载此版本" | Out-File -FilePath ReleaseBody.txt -Encoding utf8
+        Write-Output "[![下载@Build-$env:GITHUB_RUN_NUMBER](https://img.shields.io/github/downloads/SummonHIM/AutoWeMeeting/Build-$env:GITHUB_RUN_NUMBER/total?label=%E4%B8%8B%E8%BD%BD%40Build-$env:GITHUB_RUN_NUMBER&style=for-the-badge)](https://github.com/SummonHIM/AutoWeMeeting/releases/download/Build-$env:GITHUB_RUN_NUMBER/AutoWeMeeting-Build-$env:GITHUB_RUN_NUMBER.zip)" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
+        Write-Output "## 更新日志" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
+        Write-Output "https://github.com/SummonHIM/AutoWeMeeting/compare/Build-$($env:GITHUB_RUN_NUMBER-1)...Build-$env:GITHUB_RUN_NUMBER" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
 
     - name: Upload artifact to workflows
       uses: actions/upload-artifact@v3
       with:
         name: Build
-        path: AutoWeMeeting.zip
-
+        path: AutoWeMeeting-Build-${{ github.run_number }}.zip
 
     - name: Create and upload artifact to Releases
       uses: softprops/action-gh-release@v1
       with:
+        token: ${{ secrets.GITHUB_TOKEN }}
         name: AutoWeMeeting Build ID${{ github.run_number }}
         tag_name: Build-${{ github.run_number }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        body_path: ReleaseBody.txt
         prerelease: true
-        files: AutoWeMeeting.zip
+        files: AutoWeMeeting-Build-${{ github.run_number }}.zip

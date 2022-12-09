@@ -6,7 +6,7 @@
             WeMeetFolder := ""
         Else {
             try
-            WeMeetFolder := RegRead()
+                WeMeetFolder := RegRead()
         }
         Return WeMeetFolder
     }
@@ -52,16 +52,21 @@ LoadCSVSchedule(ReqParams) {
 If (CheckWeMeetLocation()) {
     TrayTip "请注意前台尽量不要打开窗口！", "程序已在后台运行！", 1
 } Else {
-    TrayTip ,"没有检测到腾讯会议！退出。", 2
+    TrayTip , "没有检测到腾讯会议！退出。", 2
     Exit
 }
 
-; 手动调整执行 Delay。如果你的电脑越卡建议设越长的时间。单位毫秒。
-SleepTime := 1000
+; 读取 Configs\SleepTime.cfg 来调整 Delay。如果你的电脑越卡建议设越长的时间。单位毫秒。
+if FileExist("Configs\SleepTime.cfg") {
+    SleepTime := FileRead("Configs\SleepTime.cfg")
+    TrayTip "设定的执行延迟为：" SleepTime "毫秒", "已读取设定好的自定义执行延迟！", 1
+} Else {
+    SleepTime := 1000
+}
 
 While True {
     For Index, CheckTime in LoadCSVSchedule("sDateTime") {
-        If (Number(FormatTime(CheckTime, "yyyyMMddhhmmss")) = Number(FormatTime(,"yyyyMMddhhmmss"))) {
+        If (Number(FormatTime(CheckTime, "yyyyMMddhhmmss")) = Number(FormatTime(, "yyyyMMddhhmmss"))) {
             TrayTip "正在启动会议 ID " LoadCSVSchedule("MeetID")[Index] "，请不要移动鼠标或键盘…", FormatTime(CheckTime " R") " 到钟！", 1
             If (ProcessExist("wemeetapp.exe")) {
                 ProcessClose "wemeetapp.exe"
@@ -69,7 +74,7 @@ While True {
             }
             WinMinimizeAll
             Run GetWeMeetLocation() "\wemeetapp.exe"
-            While ! WinExist("ahk_exe wemeetapp.exe") {
+            While !WinExist("ahk_exe wemeetapp.exe") {
                 Sleep SleepTime * 10
             }
             WinMoveTop "ahk_exe wemeetapp.exe"
