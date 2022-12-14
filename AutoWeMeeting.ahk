@@ -1,4 +1,6 @@
-﻿GetWeMeetLocation() {
+﻿#SingleInstance Force
+
+GetWeMeetLocation() {
     ; 若 HKCU\SOFTWARE\Tencent\WeMeet 存在则返回注册表值
     Loop Reg, "HKCU\SOFTWARE\Tencent\WeMeet", "R V"
     {
@@ -49,10 +51,74 @@ LoadCSVSchedule(ReqParams) {
         Return False
 }
 
+StartWeMeet(ReqIndex) {
+    TrayTip "正在启动会议 ID " LoadCSVSchedule("MeetID")[ReqIndex] "，请不要移动鼠标或键盘…", FormatTime(CheckTime " R") " 到钟！", 1
+    If (ProcessExist("wemeetapp.exe")) {
+        ProcessClose "wemeetapp.exe"
+        Sleep SleepTime
+    }
+    WinMinimizeAll
+    Run GetWeMeetLocation() "\wemeetapp.exe"
+    While !WinExist("ahk_exe wemeetapp.exe") {
+        Sleep SleepTime * 10
+    }
+    WinMoveTop "ahk_exe wemeetapp.exe"
+    Sleep SleepTime
+    ImageSearch &xJoinMeet, &yJoinMeet, 0, 0, 1000, 1000, "AWM-JoinMeet.png"
+    Click xJoinMeet, yJoinMeet
+    Sleep SleepTime
+    Loop 6
+    {
+        Send "{Backspace}"
+        Sleep 10
+    }
+    Sleep SleepTime
+    SendText LoadCSVSchedule("MeetID")[ReqIndex]
+    Sleep SleepTime
+    Send "{Enter}"
+    If (LoadCSVSchedule("PassWD")[ReqIndex]) {
+        Sleep SleepTime
+        SendText LoadCSVSchedule("PassWD")[ReqIndex]
+        Sleep SleepTime
+        Send "{Enter}"
+    }
+    WinMinimizeAllUndo
+    TrayTip "等待 " (SleepTime * 10) / 1000 " 秒后程序将隐藏后台。", "启动向导执行完毕", 1
+    Sleep SleepTime * 10
+}
+
+A_TrayMenu.Delete()
+A_TrayMenu.Add("关于", MenuAbout)
+A_TrayMenu.Add()
+A_TrayMenu.Add("重新启动", MenuReload)
+A_TrayMenu.Add("退出", MenuExit)
+Persistent
+
+MenuAbout(ItemName, ItemPos, MyMenu) {
+    TrayTip "版本号：脚本源代码执行`n正在为你打开项目官网！", "关于", 4
+    Run "https://github.com/SummonHIM/AutoWeMeeting"
+}
+MenuReload(ItemName, ItemPos, MyMenu) {
+    Reload
+}
+MenuExit(ItemName, ItemPos, MyMenu) {
+    ExitApp
+}
+
+if not FileExist("Schedule.csv") {
+    TrayTip "时间表文件 Schedule.csv 不存在！退出。", "缺少必要文件！", 3
+    Exit
+}
+
+if not FileExist("AWM-JoinMeet.png") {
+    TrayTip "图片 AWM-JoinMeet.png 不存在！退出。", "缺少必要文件！", 3
+    Exit
+}
+
 If (CheckWeMeetLocation()) {
     TrayTip "请注意前台尽量不要打开窗口！", "程序已在后台运行！", 1
 } Else {
-    TrayTip , "没有检测到腾讯会议！退出。", 2
+    TrayTip , "没有检测到腾讯会议！退出。", 3
     Exit
 }
 
@@ -66,40 +132,8 @@ if FileExist("Configs\SleepTime.cfg") {
 
 While True {
     For Index, CheckTime in LoadCSVSchedule("sDateTime") {
-        If (Number(FormatTime(CheckTime, "yyyyMMddhhmmss")) = Number(FormatTime(, "yyyyMMddhhmmss"))) {
-            TrayTip "正在启动会议 ID " LoadCSVSchedule("MeetID")[Index] "，请不要移动鼠标或键盘…", FormatTime(CheckTime " R") " 到钟！", 1
-            If (ProcessExist("wemeetapp.exe")) {
-                ProcessClose "wemeetapp.exe"
-                Sleep SleepTime
-            }
-            WinMinimizeAll
-            Run GetWeMeetLocation() "\wemeetapp.exe"
-            While !WinExist("ahk_exe wemeetapp.exe") {
-                Sleep SleepTime * 10
-            }
-            WinMoveTop "ahk_exe wemeetapp.exe"
-            Sleep SleepTime
-            ImageSearch &xJoinMeet, &yJoinMeet, 0, 0, 1000, 1000, "AWM-JoinMeet.png"
-            Click xJoinMeet, yJoinMeet
-            Sleep SleepTime
-            Loop 6
-            {
-                Send "{Backspace}"
-                Sleep 10
-            }
-            Sleep SleepTime
-            SendText LoadCSVSchedule("MeetID")[Index]
-            Sleep SleepTime
-            Send "{Enter}"
-            If (LoadCSVSchedule("PassWD")[Index]) {
-                Sleep SleepTime
-                SendText LoadCSVSchedule("PassWD")[Index]
-                Sleep SleepTime
-                Send "{Enter}"
-            }
-            WinMinimizeAllUndo
-            TrayTip "等待 " (SleepTime * 10) / 1000 " 秒后程序将隐藏后台。", "启动向导执行完毕", 1
-            Sleep SleepTime * 10
+        If (Number(FormatTime(CheckTime, "yyyyMMddHHmmss")) = Number(FormatTime(, "yyyyMMddHHmmss"))) {
+            StartWeMeet(Index)
         }
     }
 }

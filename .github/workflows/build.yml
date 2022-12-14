@@ -29,17 +29,19 @@ jobs:
         Expand-Archive -Path "$env:TEMP\ahk2exe.zip" -DestinationPath "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler" -Force
         Remove-Item -Path "$env:TEMP\autohotkey.zip" -Force
         Remove-Item -Path "$env:TEMP\ahk2exe.zip" -Force
-        Write-Output ("$env:LOCALAPPDATA\Programs\AutoHotkey;" + "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler") | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        Write-Output ("$env:LOCALAPPDATA\Programs\AutoHotkey;" + "$env:LOCALAPPDATA\Programs\AutoHotkey\Compiler") | Out-File -FilePath $env:GITHUB_PATH -Encoding UTF8 -Append
+    
+    - name: Set version number
+      shell: pwsh
+      run: (Get-Content AutoWeMeeting.ahk) -Replace '脚本源代码执行', 'Build-$env:GITHUB_RUN_NUMBER' | Set-Content AutoWeMeeting.ahk -Encoding UTF8
 
     - name: Build x64 binary file
       shell: pwsh
-      run: |
-        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting64.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey64.exe
+      run: ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting64.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey64.exe
 
     - name: Build x32 binary file
       shell: pwsh
-      run: |
-        ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting32.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey32.exe
+      run: ahk2exe.exe /in AutoWeMeeting.ahk /out AutoWeMeeting32.exe /base $env:LOCALAPPDATA\Programs\AutoHotkey\AutoHotkey32.exe
 
     - name: Zip file
       shell: pwsh
@@ -54,10 +56,10 @@ jobs:
     - name: Generate release body
       shell: pwsh
       run: |
-        Write-Output "## 下载此版本" | Out-File -FilePath ReleaseBody.txt -Encoding utf8
-        Write-Output "[![下载@Build-$env:GITHUB_RUN_NUMBER](https://img.shields.io/github/downloads/SummonHIM/AutoWeMeeting/Build-$env:GITHUB_RUN_NUMBER/total?label=%E4%B8%8B%E8%BD%BD%40Build-$env:GITHUB_RUN_NUMBER&style=for-the-badge)](https://github.com/SummonHIM/AutoWeMeeting/releases/download/Build-$env:GITHUB_RUN_NUMBER/AutoWeMeeting-Build-$env:GITHUB_RUN_NUMBER.zip)" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
-        Write-Output "## 更新日志" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
-        Write-Output "https://github.com/SummonHIM/AutoWeMeeting/compare/Build-$($env:GITHUB_RUN_NUMBER-1)...Build-$env:GITHUB_RUN_NUMBER" | Out-File -FilePath ReleaseBody.txt -Encoding utf8 -Append
+        Write-Output "## 下载此版本" | Out-File -FilePath ReleaseBody.txt -Encoding UTF8
+        Write-Output "[![下载@Build-$env:GITHUB_RUN_NUMBER](https://img.shields.io/github/downloads/SummonHIM/AutoWeMeeting/Build-$env:GITHUB_RUN_NUMBER/total?label=%E4%B8%8B%E8%BD%BD%40Build-$env:GITHUB_RUN_NUMBER&style=for-the-badge)](https://github.com/SummonHIM/AutoWeMeeting/releases/download/Build-$env:GITHUB_RUN_NUMBER/AutoWeMeeting-Build-$env:GITHUB_RUN_NUMBER.zip)" | Out-File -FilePath ReleaseBody.txt -Encoding UTF8 -Append
+        Write-Output "## 更新日志" | Out-File -FilePath ReleaseBody.txt -Encoding UTF8 -Append
+        Write-Output "https://github.com/SummonHIM/AutoWeMeeting/compare/Build-$($env:GITHUB_RUN_NUMBER-1)...Build-$env:GITHUB_RUN_NUMBER" | Out-File -FilePath ReleaseBody.txt -Encoding UTF8 -Append
 
     - name: Upload artifact to workflows
       uses: actions/upload-artifact@v3
