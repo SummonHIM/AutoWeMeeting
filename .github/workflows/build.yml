@@ -33,7 +33,7 @@ jobs:
     
     - name: Set version number
       shell: pwsh
-      run: (Get-Content AutoWeMeeting.ahk) -Replace '脚本源代码执行', 'Build-$env:GITHUB_RUN_NUMBER' | Set-Content AutoWeMeeting.ahk -Encoding UTF8
+      run: (Get-Content AutoWeMeeting.ahk) -Replace '脚本源代码执行', "Build-$env:GITHUB_RUN_NUMBER" | Set-Content AutoWeMeeting.ahk -Encoding UTF8
 
     - name: Build x64 binary file
       shell: pwsh
