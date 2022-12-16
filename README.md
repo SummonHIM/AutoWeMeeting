@@ -2,7 +2,7 @@
 一个自动进入腾讯会议的 AutoHotKey 脚本。
 
 ## 下载
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/SummonHIM/AutoWeMeeting/Build%20binary%20file?label=%E4%B8%8B%E8%BD%BD%40%E6%9C%80%E6%96%B0%E7%89%88&style=for-the-badge)](https://github.com/SummonHIM/AutoWeMeeting/releases/latest)
+[![下载@最新版](https://img.shields.io/github/actions/workflow/status/SummonHIM/AutoWeMeeting/build.yml?branch=master&label=%E4%B8%8B%E8%BD%BD%40%E6%9C%80%E6%96%B0%E7%89%88&style=for-the-badge)](https://github.com/SummonHIM/AutoWeMeeting/releases/latest)
 
 下载速度不佳可将下载链接复制到 [GhProxy.com](http://ghproxy.com/) 下载。
 
